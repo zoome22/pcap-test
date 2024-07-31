@@ -194,7 +194,7 @@ int main(int argc, char* argv[]) {
 		printETH(eth_hdr);
 
 		//ip_hdr
-		struct libnet_ipv4_hdr* ip_hdr = (struct libnet_ipv4_hdr*) (packet+14);
+		struct libnet_ipv4_hdr* ip_hdr = (struct libnet_ipv4_hdr*) (packet+sizeof(struct libnet_ethernet_hdr));
 		if(ip_hdr->ip_p != IPTYPE_TCP) {
 			continue;
 		}
