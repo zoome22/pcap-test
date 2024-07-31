@@ -8,6 +8,7 @@
 #define ETHER_ADDR_LEN 6
 #define ETHERTYPE_IP 0x0800
 #define IPTYPE_TCP 0x0006
+#define LIBNET_LIL_ENDIAN 1
 
 // ethernet header
 struct libnet_ethernet_hdr
@@ -109,7 +110,10 @@ struct libnet_tcp_hdr
 
 //==========================================
 
-void printETH(struct libnet_ethernet_hdr* eth_hdr){
+void printETH(struct libnet_ethernet_hdr* eth_hdr)
+{	
+	printf("Source MAC: ");
+	printf(eth_hdr->ether_shost);
 	printf("ethernet");
 }
 
@@ -170,8 +174,6 @@ int main(int argc, char* argv[]) {
 			printf("pcap_next_ex return %d(%s)\n", res, pcap_geterr(pcap));
 			break;
 		}
-		printf("%u bytes captured\n", header->caplen);
-
 
 		//eth_hdr
 		struct libnet_ethernet_hdr* eth_hdr = (struct libnet_ethernet_hdr*) packet;
@@ -179,26 +181,23 @@ int main(int argc, char* argv[]) {
 		if(ntohs(eth_hdr->ether_type) != ETHERTYPE_IP) {
 			continue;
 		}
+		printETH(eth_hdr);
 
 		//ip_hdr
-		struct libnet_ipv4_hdr* ip_hdr = (struct libnet_ipv4_hdr*) (packet+sizeof(struct libnet_ethernet_hdr));
+		struct libnet_ipv4_hdr* ip_hdr = (struct libnet_ipv4_hdr*) (packet+14);
 		if(ip_hdr->ip_p != IPTYPE_TCP) {
 			continue;
 		}
-		int total_len = ntohs(ip_hdr->ip_len);
-		int ip_hdr_len = ip_hdr->ip_hl*4;
+		int ip_hdr_len = (ip_hdr->ip_hl)*4;
+		printIP(ip_hdr);
 
 		//tcp_hdr
 		struct libnet_tcp_hdr* tcp_hdr = (struct libnet_tcp_hdr*)(packet+sizeof(struct libnet_ethernet_hdr)+(ip_hdr_len));
-		int tcp_hdr_len = tcp_hdr->th_off*4;
+		int tcp_hdr_len = (tcp_hdr->th_off)*4;
+		printTCP(tcp_hdr);
 
 		//payload
 		char* payload = (char*)(packet+sizeof(struct libnet_ethernet_hdr)+(ip_hdr_len)+(tcp_hdr_len));
-
-		//print
-		printETH(eth_hdr);
-		printIP(ip_hdr);
-		printTCP(tcp_hdr);
 		printPAYLOAD(payload);
 
 	}
