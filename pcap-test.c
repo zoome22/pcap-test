@@ -111,22 +111,32 @@ struct libnet_tcp_hdr
 //==========================================
 
 void printETH(struct libnet_ethernet_hdr* eth_hdr)
-{	
-	printf("Source MAC: ");
-	printf(eth_hdr->ether_shost);
-	printf("ethernet");
+{
+       	printf("src MAC: %02x:%02x:%02x:%02x:%02x:%02x\n",
+        eth_hdr->ether_shost[0], eth_hdr->ether_shost[1], eth_hdr->ether_shost[2],
+        eth_hdr->ether_shost[3], eth_hdr->ether_shost[4], eth_hdr->ether_shost[5]);
+	printf("dst MAC: %02x:%02x:%02x:%02x:%02x:%02x\n",
+        eth_hdr->ether_dhost[0], eth_hdr->ether_dhost[1], eth_hdr->ether_dhost[2],
+        eth_hdr->ether_dhost[3], eth_hdr->ether_dhost[4], eth_hdr->ether_dhost[5]);
 }
 
 void printIP(struct libnet_ipv4_hdr* ip_hdr){
-	printf("IP");
+    printf("src IP: %s\n", inet_ntoa(ip_hdr->ip_src));
+    printf("dst IP: %s\n", inet_ntoa(ip_hdr->ip_dst));
 }
 
 void printTCP(struct libnet_tcp_hdr* tcp_hdr){
-	printf("TCP");
+    printf("src port: %d\n", ntohs(tcp_hdr->th_sport));
+    printf("dst port: %d\n", ntohs(tcp_hdr->th_dport));
 }
 
 void printPAYLOAD(char* payload){
-	printf("payload");
+    printf("PAYLOAD: ");
+    for (int i = 0; i < 20; i++)
+    {
+        printf("%02x ", (unsigned char)payload[i]);
+    }
+    printf("\n");
 }
 
 //==============================================
@@ -200,6 +210,7 @@ int main(int argc, char* argv[]) {
 		char* payload = (char*)(packet+sizeof(struct libnet_ethernet_hdr)+(ip_hdr_len)+(tcp_hdr_len));
 		printPAYLOAD(payload);
 
+		printf("=============================================================\n");
 	}
 
 	pcap_close(pcap);
