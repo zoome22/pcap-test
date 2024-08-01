@@ -108,7 +108,7 @@ struct libnet_tcp_hdr
     u_int16_t th_urp;         /* urgent pointer */
 };
 
-//==========================================
+//===============================================================================
 
 void printETH(struct libnet_ethernet_hdr* eth_hdr)
 {
@@ -139,7 +139,7 @@ void printPAYLOAD(char* payload){
     printf("\n");
 }
 
-//==============================================
+//===============================================================================
 
 void usage() {
 	printf("syntax: pcap-test <interface>\n");
@@ -163,7 +163,7 @@ bool parse(Param* param, int argc, char* argv[]) {
 	return true;
 }
 
-//=========================================main
+//===============================================================================
 int main(int argc, char* argv[]) {
 	if (!parse(&param, argc, argv))
 		return -1;
@@ -191,25 +191,26 @@ int main(int argc, char* argv[]) {
 		if(ntohs(eth_hdr->ether_type) != ETHERTYPE_IP) {
 			continue;
 		}
-		printETH(eth_hdr);
 
-		//ip_hdr
+		//ip_hdr : + ethernet header
 		struct libnet_ipv4_hdr* ip_hdr = (struct libnet_ipv4_hdr*) (packet+sizeof(struct libnet_ethernet_hdr));
 		if(ip_hdr->ip_p != IPTYPE_TCP) {
 			continue;
 		}
 		int ip_hdr_len = (ip_hdr->ip_hl)*4;
-		printIP(ip_hdr);
 
-		//tcp_hdr
+		//tcp_hdr : + ethernet header + ip header
 		struct libnet_tcp_hdr* tcp_hdr = (struct libnet_tcp_hdr*)(packet+sizeof(struct libnet_ethernet_hdr)+(ip_hdr_len));
 		int tcp_hdr_len = (tcp_hdr->th_off)*4;
-		printTCP(tcp_hdr);
 
-		//payload
+		//payload : + ethernet header + ip header + tcp header ~ 20byte
 		char* payload = (char*)(packet+sizeof(struct libnet_ethernet_hdr)+(ip_hdr_len)+(tcp_hdr_len));
-		printPAYLOAD(payload);
 
+		//print
+		printETH(eth_hdr);
+		printIP(ip_hdr);
+		printTCP(tcp_hdr);
+		printPAYLOAD(payload);
 		printf("=============================================================\n");
 	}
 
